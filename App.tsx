@@ -86,7 +86,6 @@ function AppNavigator() {
       <NavigationContainer>
         <StatusBar style="light" />
         <Stack.Navigator
-          initialRouteName={usuario ? "Dashboard" : "Login"}
           screenOptions={{ headerShown: false }}
         >
           {!usuario ? (

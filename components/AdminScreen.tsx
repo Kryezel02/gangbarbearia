@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, RefreshCon
 import { useAgendamentos } from './AgendamentosContext';
 
 export default function AdminScreen() {
-  const { agendamentos, cancelarAgendamento, concluirAgendamento, logout } = useAgendamentos();
+  const { agendamentos, cancelarAgendamento, concluirAgendamento, excluirAgendamento, logout } = useAgendamentos();
   const [refreshing, setRefreshing] = useState(false);
 
   function formatarData(data: string) {
@@ -53,6 +53,24 @@ export default function AdminScreen() {
           onPress: () => {
             concluirAgendamento(id);
             Alert.alert('Sucesso', 'Agendamento marcado como concluído!');
+          }
+        }
+      ]
+    );
+  }
+
+  function handleExcluirAgendamento(id: string, nomeCliente: string) {
+    Alert.alert(
+      'Excluir Agendamento',
+      `Deseja excluir permanentemente o agendamento de ${nomeCliente}?`,
+      [
+        { text: 'Não', style: 'cancel' },
+        { 
+          text: 'Sim', 
+          style: 'destructive',
+          onPress: () => {
+            excluirAgendamento(id);
+            Alert.alert('Sucesso', 'Agendamento excluído com sucesso!');
           }
         }
       ]
@@ -115,6 +133,7 @@ export default function AdminScreen() {
 
       <ScrollView 
         style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -187,6 +206,17 @@ export default function AdminScreen() {
                     </TouchableOpacity>
                   </View>
                 )}
+
+                {(agendamento.status === 'concluido' || agendamento.status === 'cancelado') && (
+                  <View style={styles.actionButtons}>
+                    <TouchableOpacity 
+                      style={[styles.actionButton, styles.excluirButton]}
+                      onPress={() => handleExcluirAgendamento(agendamento.id, agendamento.nomeUsuario)}
+                    >
+                      <Text style={styles.actionButtonText}>Excluir</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
             );
           })
@@ -205,62 +235,66 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff6b35',
     paddingTop: 50,
     paddingBottom: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 4,
+    textAlign: 'center',
   },
   headerSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#fff',
     opacity: 0.9,
+    textAlign: 'center',
   },
   logoutButton: {
     position: 'absolute',
     top: 50,
-    right: 20,
+    right: 16,
     padding: 8,
   },
   logoutText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   statsContainer: {
     flexDirection: 'row',
-    padding: 20,
-    gap: 10,
+    padding: 16,
+    gap: 8,
   },
   statCard: {
     flex: 1,
     backgroundColor: '#232323',
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#ff6b35',
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#ccc',
     marginTop: 4,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
-    padding: 20,
+    padding: 16,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 16,
+    textAlign: 'center',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -269,6 +303,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: '#ccc',
+    textAlign: 'center',
   },
   agendamentoCard: {
     backgroundColor: '#232323',
@@ -281,20 +316,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
+    flexWrap: 'wrap',
   },
   clienteNome: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+    flex: 1,
   },
   statusBadge: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    marginLeft: 8,
   },
   statusText: {
     color: '#fff',
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   agendamentoInfo: {
@@ -304,14 +342,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    flexWrap: 'wrap',
   },
   infoLabel: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#ccc',
     flex: 1,
+    minWidth: 80,
   },
   infoValue: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#fff',
     fontWeight: '500',
     flex: 2,
@@ -319,13 +359,13 @@ const styles = StyleSheet.create({
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
     marginTop: 16,
   },
   actionButton: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 6,
     alignItems: 'center',
   },
@@ -335,9 +375,12 @@ const styles = StyleSheet.create({
   cancelarButton: {
     backgroundColor: '#dc3545',
   },
+  excluirButton: {
+    backgroundColor: '#6c757d',
+  },
   actionButtonText: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
   },
 }); 

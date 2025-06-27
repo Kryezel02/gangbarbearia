@@ -33,6 +33,7 @@ interface AgendamentosContextData {
   adicionarAgendamento: (agendamento: Omit<Agendamento, 'id' | 'usuarioId' | 'nomeUsuario' | 'telefoneUsuario' | 'dataCriacao'>) => void;
   cancelarAgendamento: (id: string) => void;
   concluirAgendamento: (id: string) => void;
+  excluirAgendamento: (id: string) => void;
   remarcarAgendamento: (id: string, novaData: string, novoHorario: string) => void;
   getAgendamentosPorUsuario: (usuarioId: string) => Agendamento[];
   isLoading: boolean;
@@ -48,7 +49,16 @@ export function AgendamentosProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [usuarios, setUsuarios] = useState<Usuario[]>([
+    {
+      id: 'admin',
+      nome: 'Administrador',
+      email: 'admin',
+      telefone: '(11) 99999-9999',
+      senha: 'admin',
+      isAdmin: true,
+    }
+  ]);
 
   useEffect(() => {
     carregarDadosSalvos();
@@ -76,7 +86,25 @@ export function AgendamentosProvider({ children }: { children: ReactNode }) {
       }
 
       if (usuariosSalvos) {
-        setUsuarios(JSON.parse(usuariosSalvos));
+        const usuariosCarregados = JSON.parse(usuariosSalvos);
+        
+        const adminUser = usuariosCarregados.find((u: Usuario) => u.email === 'admin');
+        if (!adminUser) {
+          const usuariosComAdmin = [
+            {
+              id: 'admin',
+              nome: 'Administrador',
+              email: 'admin',
+              telefone: '(11) 99999-9999',
+              senha: 'admin',
+              isAdmin: true,
+            },
+            ...usuariosCarregados
+          ];
+          setUsuarios(usuariosComAdmin);
+        } else {
+          setUsuarios(usuariosCarregados);
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar dados salvos:', error);
@@ -107,13 +135,38 @@ export function AgendamentosProvider({ children }: { children: ReactNode }) {
 
   async function salvarUsuarios(usuarios: Usuario[]) {
     try {
-      await AsyncStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(usuarios));
+      const adminUser = usuarios.find(u => u.email === 'admin');
+      if (!adminUser) {
+        const usuariosComAdmin = [
+          {
+            id: 'admin',
+            nome: 'Administrador',
+            email: 'admin',
+            telefone: '(11) 99999-9999',
+            senha: 'admin',
+            isAdmin: true,
+          },
+          ...usuarios
+        ];
+        await AsyncStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(usuariosComAdmin));
+      } else {
+        await AsyncStorage.setItem(USUARIOS_STORAGE_KEY, JSON.stringify(usuarios));
+      }
     } catch (error) {
       console.error('Erro ao salvar usuários:', error);
     }
   }
 
   async function login(email: string, senha: string): Promise<boolean> {
+    if (email === 'admin' && senha === 'admin') {
+      const adminUser = usuarios.find(u => u.email === 'admin');
+      if (adminUser) {
+        setUsuario(adminUser);
+        await salvarUsuario(adminUser);
+        return true;
+      }
+    }
+    
     const user = usuarios.find(u => u.email === email);
     
     if (user && user.senha === senha) {
@@ -195,6 +248,12 @@ export function AgendamentosProvider({ children }: { children: ReactNode }) {
     salvarAgendamentos(novosAgendamentos);
   }
 
+  function excluirAgendamento(id: string) {
+    const novosAgendamentos = agendamentos.filter(ag => ag.id !== id);
+    setAgendamentos(novosAgendamentos);
+    salvarAgendamentos(novosAgendamentos);
+  }
+
   function remarcarAgendamento(id: string, novaData: string, novoHorario: string) {
     const novosAgendamentos = agendamentos.map(ag => 
       ag.id === id ? { ...ag, data: novaData, horario: novoHorario } : ag
@@ -216,6 +275,7 @@ export function AgendamentosProvider({ children }: { children: ReactNode }) {
     adicionarAgendamento,
     cancelarAgendamento,
     concluirAgendamento,
+    excluirAgendamento,
     remarcarAgendamento,
     getAgendamentosPorUsuario,
     isLoading,
