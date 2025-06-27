@@ -1,0 +1,37 @@
+{
+  "expo": {
+    "name": "Gang Barbearia",
+    "slug": "gang-barbearia",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#181818"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "backgroundColor": "#181818"
+    },
+    "android": {
+      "package": "com.gangbarbearia.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#181818"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "backgroundColor": "#181818"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b909526d-cca0-4115-986a-df033959471d"
+      }
+    }
+  }
+}
